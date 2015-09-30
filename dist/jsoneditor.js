@@ -1712,7 +1712,7 @@ JSONEditor.AbstractEditor = Class.extend({
   },
   isRequired: function() {
     if(typeof this.schema.required === "boolean") return this.schema.required;
-    else if(this.parent && this.parent.schema && Array.isArray(this.parent.schema.required)) return this.parent.schema.required.indexOf(this.key) > -1;
+    else if(this.parent && this.parent.schema && Array.isArray(this.parent.schema.required) && this.parent.schema.required.indexOf(this.key) > -1) return true;
     else if(this.jsoneditor.options.required_by_default) return true;
     else return false;
   },  
@@ -3059,7 +3059,7 @@ JSONEditor.defaults.editors.object = JSONEditor.AbstractEditor.extend({
   },
   isRequired: function(editor) {
     if(typeof editor.schema.required === "boolean") return editor.schema.required;
-    else if(Array.isArray(this.schema.required)) return this.schema.required.indexOf(editor.key) > -1;
+    else if(Array.isArray(this.schema.required) && this.schema.required.indexOf(editor.key) > -1) return true;
     else if(this.jsoneditor.options.required_by_default) return true;
     else return false;
   },

@@ -787,7 +787,7 @@ JSONEditor.defaults.editors.object = JSONEditor.AbstractEditor.extend({
   },
   isRequired: function(editor) {
     if(typeof editor.schema.required === "boolean") return editor.schema.required;
-    else if(Array.isArray(this.schema.required)) return this.schema.required.indexOf(editor.key) > -1;
+    else if(Array.isArray(this.schema.required) && this.schema.required.indexOf(editor.key) > -1) return true;
     else if(this.jsoneditor.options.required_by_default) return true;
     else return false;
   },
