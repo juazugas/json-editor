@@ -1950,6 +1950,9 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
         } else if(window.moment && typeof window.moment.locale === 'function') {
           dateopts.locale = window.moment.locale();
         }
+        if(this.jsoneditor.options.timezone) {
+          dateopts.timezone = this.jsoneditor.options.timezone;
+        }
         // Get the format of the expected date, date-time or time.
         var date_format = 'L LTS';
         if(this.format==='date-time' && typeof this.jsoneditor.options.datetime_format !== 'undefined') {
@@ -2249,8 +2252,8 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
   },
   refreshValue: function() {
     if(['date','date-time'].indexOf(this.format) >= 0 && this.input.value !== '') {
-      if(window.moment && typeof window.moment === 'function') {
-        this.value = window.moment.tz(this.input.value, this.dateFormat, this.jsoneditor.options.timezone).toISOString();
+      if(window.moment && typeof window.moment.tz === 'function') {
+        this.value = window.moment.tz(this.input.value, this.dateFormat, this.jsoneditor.options.timezone).format();
       } else {
         this.value = new Date(this.input.value).toISOString();
       }
@@ -6648,6 +6651,85 @@ JSONEditor.defaults.themes.bootstrap3 = JSONEditor.AbstractTheme.extend({
     }
     return el;
   },
+  /**
+   * Function to create a date field. It uses the component bootstrap-datetimepicker.
+   * @param type
+   * @param extras
+   * @returns {*}
+   */
+  getFormDateInputField: function(type, extras) {
+    return this.getFormDateTimeInputField(type, extras);
+  },
+  /**
+   * Function to create a date-time field. It uses the component bootstrap-datetimepicker.
+   * @param type
+   * @param extras
+   * @returns {*}
+   */
+  getFormDateTimeInputField: function(type, extras) {
+    type = 'text';// Chrome workaround
+    var el = this.getFormInputField(type);
+    var options = {
+      icons: {
+        time: "fa fa-clock-o",
+        date: "fa fa-calendar",
+        up  : "fa fa-arrow-up",
+        down: "fa fa-arrow-down"
+      },
+      showClose: true,
+      showClear: true,
+      allowInputToggle: true
+    };
+    var extraopts = extras || {};
+    el.setAttribute('data-datetimepicker', '');
+    if(extraopts.dateFormat) {
+      el.setAttribute('data-date-format', extraopts.dateFormat);
+      options.format = extraopts.dateFormat;
+    }
+    if(extraopts.minValue) {
+      el.setAttribute('date-min-restrict', extraopts.minValue);
+      options.minDate = extraopts.minValue;
+    }
+    if(extraopts.maxValue) {
+      el.setAttribute('date-max-restrict', extraopts.maxValue);
+      options.maxDate = extraopts.maxValue;
+    }
+    if(extraopts.locale) {
+      el.setAttribute('date-locale', extraopts.locale);
+      options.locale = extraopts.locale;
+    }
+    if(extraopts.timezone) {
+      el.setAttribute('date-timezone', extraopts.locale);
+      options.timeZone = extraopts.timezone;
+    }
+    if (window.jQuery && typeof window.jQuery(el).datetimepicker === 'function') {
+      window.jQuery(el).datetimepicker(options);
+      var dtpicker = window.jQuery(el).data("DateTimePicker");
+      if(extraopts.defaultValue) {
+        el.setAttribute('data-default-date', extraopts.defaultValue);
+        dtpicker.date(extraopts.defaultValue);
+      }
+      if (extraopts.changeListener) {
+        window.jQuery(el).on("dp.change", function (e) {
+          //window.console.log(e.date);
+          if (typeof extraopts.changeListener === 'function') {
+            var event = new CustomEvent('change', e);
+            extraopts.changeListener(event);
+          }
+        });
+      }
+    }
+    return el;
+  },
+  /**
+   * Function to create a time-field. It uses component bootstrap-datetimepicker.
+   * @param type
+   * @param extras
+   * @returns {*}
+   */
+  getFormTimeInputField: function(type, extras) {
+    return this.getFormDateTimeInputField(type, extras);
+  },
   getFormControl: function(label, input, description) {
     var group = document.createElement('div');
 
@@ -7375,6 +7457,10 @@ JSONEditor.defaults.themes.smartadmin = JSONEditor.AbstractTheme.extend({
     if(extraopts.locale) {
       el.setAttribute('date-locale', extraopts.locale);
       options.locale = extraopts.locale;
+    }
+    if(extraopts.timezone) {
+      el.setAttribute('date-timezone', extraopts.locale);
+      options.timeZone = extraopts.timezone;
     }
     if (window.jQuery && typeof window.jQuery(el).datetimepicker === 'function') {
       window.jQuery(el).datetimepicker(options);
