@@ -126,6 +126,10 @@ JSONEditor.defaults.themes.smartadmin = JSONEditor.AbstractTheme.extend({
       el.setAttribute('date-locale', extraopts.locale);
       options.locale = extraopts.locale;
     }
+    if(extraopts.timezone) {
+      el.setAttribute('date-timezone', extraopts.locale);
+      options.timeZone = extraopts.timezone;
+    }
     if (window.jQuery && typeof window.jQuery(el).datetimepicker === 'function') {
       window.jQuery(el).datetimepicker(options);
       var dtpicker = window.jQuery(el).data("DateTimePicker");

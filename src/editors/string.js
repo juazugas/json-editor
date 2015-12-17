@@ -148,6 +148,9 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
         } else if(window.moment && typeof window.moment.locale === 'function') {
           dateopts.locale = window.moment.locale();
         }
+        if(this.jsoneditor.options.timezone) {
+          dateopts.timezone = this.jsoneditor.options.timezone;
+        }
         // Get the format of the expected date, date-time or time.
         var date_format = 'L LTS';
         if(this.format==='date-time' && typeof this.jsoneditor.options.datetime_format !== 'undefined') {
@@ -447,8 +450,8 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
   },
   refreshValue: function() {
     if(['date','date-time'].indexOf(this.format) >= 0 && this.input.value !== '') {
-      if(window.moment && typeof window.moment === 'function') {
-        this.value = window.moment.tz(this.input.value, this.dateFormat, this.jsoneditor.options.timezone).toISOString();
+      if(window.moment && typeof window.moment.tz === 'function') {
+        this.value = window.moment.tz(this.input.value, this.dateFormat, this.jsoneditor.options.timezone).format();
       } else {
         this.value = new Date(this.input.value).toISOString();
       }
