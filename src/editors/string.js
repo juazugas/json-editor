@@ -41,6 +41,11 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
     else if(this.ace_editor) {
       this.ace_editor.setValue(sanitized);
     }
+    else if(['date','date-time','time'].indexOf(this.format) >= 0 && this.dateFormat) {
+      if(this.input.value !== '' && window.moment && typeof window.moment.tz === 'function') {
+        this.input.value = window.moment.tz(sanitized, this.jsoneditor.options.timezone).format(this.dateFormat);
+      }
+    }
     
     var changed = from_template || this.getValue() !== value;
     
@@ -80,6 +85,32 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
       this.format = this.options.format;
     }
 
+    var eventListener = function(e) {
+      if (typeof e.preventDefault === 'function') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Don't allow changing if this field is a template
+      if(self.schema.template) {
+        this.value = self.value;
+        return;
+      }
+
+      var val = this.value;
+
+      // sanitize value
+      var sanitized = self.sanitize(val);
+      if(val !== sanitized) {
+        this.value = sanitized;
+      }
+
+      self.is_dirty = true;
+
+      self.refreshValue();
+      self.onChange(true);
+    };
+
     // Specific format
     if(this.format) {
       // Text Area
@@ -100,6 +131,58 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
         }
 
         this.input = this.theme.getRangeInput(min,max,step);
+      }
+      // Date time Input
+      else if(['date','date-time','time'].indexOf(this.format) >= 0) {
+        this.input_type = (this.format === 'date-time') ? this.input_type = 'datetime-local' : this.input_type = this.format;
+        var dateopts = {};
+        dateopts.format = this.format;
+        if(this.schema.minimum) {
+          dateopts.minValue = this.schema.minimum;
+        }
+        if(this.schema.maximum) {
+          dateopts.maxValue = this.schema.maximum;
+        }
+        if(this.jsoneditor.options.locale) {
+          dateopts.locale = this.jsoneditor.options.locale;
+        } else if(window.moment && typeof window.moment.locale === 'function') {
+          dateopts.locale = window.moment.locale();
+        }
+        // Get the format of the expected date, date-time or time.
+        var date_format = 'L LTS';
+        if(this.format==='date-time' && typeof this.jsoneditor.options.datetime_format !== 'undefined') {
+          date_format = this.jsoneditor.options.datetime_format;
+        } else if (this.format==='date' && typeof this.jsoneditor.options.date_format !== 'undefined') {
+          date_format = this.jsoneditor.options.date_format;
+        } else if (this.format==='time' && typeof this.jsoneditor.options.time_format !== 'undefined') {
+          date_format = this.jsoneditor.options.time_format;
+        }
+
+        if(date_format) {
+          this.dateFormat = dateopts.dateFormat =date_format;
+        }
+        if(this.schema.default) {
+          dateopts.defaultValue = this.schema.default;
+        }
+        if(typeof eventListener === 'function') {
+          dateopts.changeListener = eventListener;
+        }
+
+        if(this.format==='date-time' && typeof this.theme.getFormDateTimeInputField  === 'function') {
+          this.input = this.theme.getFormDateInputField(this.input_type, dateopts);
+        } else if(this.format==='date' && typeof this.theme.getFormDateInputField  === 'function') {
+          this.input = this.theme.getFormDateTimeInputField(this.input_type, dateopts);
+        } else if(this.format==='time' && typeof this.theme.getFormTimeInputField  === 'function') {
+          this.input = this.theme.getFormTimeInputField(this.input_type, dateopts);
+        } else {
+          this.input = this.theme.getFormInputField(this.input_type);
+        }
+        if (date_format)  {
+          var date_desc = 'Format : ' + date_format + ' <br/>';
+          date_desc += (this.schema.description) ? this.schema.description : '';
+          this.input.setAttribute('placeholder', date_format);
+          this.description = this.theme.getFormInputDescription(date_desc);
+        }
       }
       // Source Code
       else if([
@@ -188,31 +271,12 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
       this.input.disabled = true;
     }
 
-    this.input
-      .addEventListener('change',function(e) {        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Don't allow changing if this field is a template
-        if(self.schema.template) {
-          this.value = self.value;
-          return;
-        }
-
-        var val = this.value;
-        
-        // sanitize value
-        var sanitized = self.sanitize(val);
-        if(val !== sanitized) {
-          this.value = sanitized;
-        }
-        
-        self.is_dirty = true;
-
-        self.refreshValue();
-        self.onChange(true);
-      });
-      
+    if (window.jQuery) {
+      window.jQuery(this.input).on('change', function (e) {eventListener(e);});
+    } else {
+      this.input
+          .addEventListener('change', function(e) {eventListener(e);});
+    }
     if(this.options.input_height) this.input.style.height = this.options.input_height;
     if(this.options.expand_height) {
       this.adjust_height = function(el) {
@@ -288,7 +352,11 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
     var self = this, options;
     
     // Code editor
-    if(this.source_code) {      
+    if(['date','date-time'].indexOf(this.format) >= 0) {
+      if(window.moment && typeof window.moment.tz === 'function' && this.dateFormat && this.getValue()) {
+        this.input.value = window.moment.tz(this.getValue(), this.jsoneditor.options.timezone).format(this.dateFormat);
+      }
+    } else if(this.source_code) {
       // WYSIWYG html and bbcode editor
       if(this.options.wysiwyg && 
         ['html','bbcode'].indexOf(this.input_type) >= 0 && 
@@ -378,7 +446,15 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
     self.theme.afterInputReady(self.input);
   },
   refreshValue: function() {
-    this.value = this.input.value;
+    if(['date','date-time'].indexOf(this.format) >= 0 && this.input.value !== '') {
+      if(window.moment && typeof window.moment === 'function') {
+        this.value = window.moment.tz(this.input.value, this.dateFormat, this.jsoneditor.options.timezone).toISOString();
+      } else {
+        this.value = new Date(this.input.value).toISOString();
+      }
+    } else {
+      this.value = this.input.value;
+    }
     if(typeof this.value !== "string") this.value = '';
     this.serialized = this.value;
   },

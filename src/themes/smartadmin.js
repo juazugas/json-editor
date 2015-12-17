@@ -1,4 +1,9 @@
-JSONEditor.defaults.themes.bootstrap3 = JSONEditor.AbstractTheme.extend({
+/**
+ * Special theme for develop the appearance of the smartadmin html template.
+ * Mixes bootstrap3 theme with special jquery-ui concepts.
+ * @type {void|*}
+ */
+JSONEditor.defaults.themes.smartadmin = JSONEditor.AbstractTheme.extend({
   getSelectInput: function(options) {
     var el = this._super(options);
     el.className += 'form-control';
@@ -34,6 +39,47 @@ JSONEditor.defaults.themes.bootstrap3 = JSONEditor.AbstractTheme.extend({
     return el;
   },
   /**
+   * Function to define a field to enter a date.
+   * @param type
+   * @param extras
+   * @returns {*}
+   */
+  getFormDatePickerInputField: function(type, extras) {
+    var el = this.getFormInputField(type);
+    if(type !== 'date') {
+      return el;
+    }
+    var options = {
+      prevText: '<i class="fa fa-chevron-left"></i>',
+      nextText: '<i class="fa fa-chevron-right"></i>',
+      onSelect: function (selectedDate) {
+        if (window.jQuery && typeof window.jQuery(el).trigger === 'function') {
+          window.jQuery(el).trigger('change');
+        }
+      }
+    };
+    var extraopts = extras || {};
+    el.setAttribute('data-smart-datepicker', '');
+    if(extraopts.defaultValue) {
+      el.setAttribute('data-default-date', extraopts.defaultValue);
+      options.defaultDate = extraopts.defaultValue;
+    }
+    if(extraopts.dateFormat) {
+      el.setAttribute('data-date-format', extraopts.dateFormat);
+      options.dateFormat = extraopts.dateFormat;
+    }
+    if(extraopts.minValue) {
+      el.setAttribute('date-min-restrict', extraopts.minValue);
+    }
+    if(extraopts.maxValue) {
+      el.setAttribute('date-max-restrict', extraopts.maxValue);
+    }
+    if (window.jQuery && typeof window.jQuery(el).datepicker === 'function') {
+      window.jQuery(el).datepicker(options);
+    }
+    return el;
+  },
+  /**
    * Function to create a date field. It uses the component bootstrap-datetimepicker.
    * @param type
    * @param extras
@@ -54,9 +100,9 @@ JSONEditor.defaults.themes.bootstrap3 = JSONEditor.AbstractTheme.extend({
     var options = {
       icons: {
         time: "fa fa-clock-o",
-        date: "fa fa-calendar",
-        up  : "fa fa-arrow-up",
-        down: "fa fa-arrow-down"
+            date: "fa fa-calendar",
+            up  : "fa fa-arrow-up",
+            down: "fa fa-arrow-down"
       },
       showClose: true,
       showClear: true,

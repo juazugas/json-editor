@@ -20,6 +20,26 @@
         "male",
         "female"
       ]
+    },
+    "dob": {
+      "name": "dob_dt",
+      "title": "Date of birth",
+      "type": "string",
+      "format": "date"
+    },
+    "insert_date": {
+      "name": "ref_date",
+      "description" : "Reference date for the person.",
+      "title": "reference_dt",
+      "type": "string",
+      "format": "date-time"
+    },
+    "call_time": {
+      "name": "call_time",
+      "description" : "Preferred calling time",
+      "title": "call_time",
+      "type": "string",
+      "format": "time"
     }
   }
 }

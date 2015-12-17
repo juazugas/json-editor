@@ -7,6 +7,9 @@ JSONEditor.defaults.template = 'default';
 // Default options when initializing JSON Editor
 JSONEditor.defaults.options = {};
 
+// Set the default timezone. Empty the locale in the browser.
+JSONEditor.defaults.options.timezone = '';
+
 // String translate function
 JSONEditor.defaults.translate = function(key, variables) {
   var lang = JSONEditor.defaults.languages[JSONEditor.defaults.language];
