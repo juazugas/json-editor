@@ -25,7 +25,9 @@
       "name": "dob_dt",
       "title": "Date of birth",
       "type": "string",
-      "format": "date"
+      "format": "date",
+      "minLength": 4,
+      "maxLength": 20 
     },
     "insert_date": {
       "name": "ref_date",

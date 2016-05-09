@@ -256,36 +256,38 @@ JSONEditor.Validator = Class.extend({
     }
     // String specific validation
     else if(typeof value === "string") {
-      // `maxLength`
-      if(schema.maxLength) {
-        if((value+"").length > schema.maxLength) {
-          errors.push({
-            path: path,
-            property: 'maxLength',
-            message: this.translate('error_maxLength', [schema.maxLength])
-          });
+      if (['date','date-time','time'].indexOf(schema.format) == -1) {
+        // `maxLength`
+        if(schema.maxLength) {
+          if((value+"").length > schema.maxLength) {
+            errors.push({
+              path: path,
+              property: 'maxLength',
+              message: this.translate('error_maxLength', [schema.maxLength])
+            });
+          }
         }
-      }
 
-      // `minLength`
-      if(schema.minLength) {
-        if((value+"").length < schema.minLength) {          
-          errors.push({
-            path: path,
-            property: 'minLength',
-            message: this.translate((schema.minLength===1?'error_notempty':'error_minLength'), [schema.minLength])
-          });
+        // `minLength`
+        if(schema.minLength) {
+          if((value+"").length < schema.minLength) {
+            errors.push({
+              path: path,
+              property: 'minLength',
+              message: this.translate((schema.minLength===1?'error_notempty':'error_minLength'), [schema.minLength])
+            });
+          }
         }
-      }
 
-      // `pattern`
-      if(schema.pattern) {
-        if(!(new RegExp(schema.pattern)).test(value)) {
-          errors.push({
-            path: path,
-            property: 'pattern',
-            message: this.translate('error_pattern')
-          });
+        // `pattern`
+        if(schema.pattern) {
+          if(!(new RegExp(schema.pattern)).test(value)) {
+            errors.push({
+              path: path,
+              property: 'pattern',
+              message: this.translate('error_pattern')
+            });
+          }
         }
       }
     }
