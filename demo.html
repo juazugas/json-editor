@@ -44,13 +44,15 @@
                 <div>
                     <label>CSS Framework</label>
                     <select id='theme_switcher' class='form-control'>
-                        <option value='html'>None</option>
+                        <option value='barebones'>Barebones</option>
+                        <option value='html'>HTML</option>
                         <option value='jqueryui'>jQuery UI</option>
                         <option value='bootstrap2'>Bootstrap 2</option>
                         <option value='bootstrap3'>Bootstrap 3</option>
                         <option value='foundation3'>Foundation 3</option>
                         <option value='foundation4'>Foundation 4</option>
                         <option value='foundation5'>Foundation 5</option>
+                        <option value='foundation6'>Foundation 6</option>
                     </select>
                 </div>
                 <div>
@@ -94,6 +96,8 @@
                         <option value='disable_array_add'>Disable array add buttons</option>
                         <option value='disable_array_reorder'>Disable array move buttons</option>
                         <option value='disable_array_delete'>Disable array delete buttons</option>
+                        <option value='disable_array_delete_all_rows'>Disable array delete all rows buttons</option>
+                        <option value='disable_array_delete_last_row'>Disable array delete last row buttons</option>
                     </select>
                 </div>
             </div>
@@ -331,12 +335,14 @@ editor.on("change",  function() {
         theme = theme || '';
 
         var mapping = {
+            barebones: '',
             html: '',
             bootstrap2: '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css',
             bootstrap3: '//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css',
             foundation3: '//cdnjs.cloudflare.com/ajax/libs/foundation/3.2.5/stylesheets/foundation.css',
             foundation4: '//cdn.jsdelivr.net/foundation/4.3.2/css/foundation.min.css',
             foundation5: '//cdn.jsdelivr.net/foundation/5.0.2/css/foundation.min.css',
+            foundation6: '//cdn.jsdelivr.net/foundation/6.2.1/foundation.min.css',
             jqueryui: '//code.jquery.com/ui/1.10.3/themes/south-street/jquery-ui.css'
         };
 
@@ -398,23 +404,23 @@ editor.on("change",  function() {
     document.getElementById('boolean_options').addEventListener('change',function() {
         refreshBooleanOptions();
     });
-    
+
     // Get starting value from url
     if(window.location.href.match('[?&]value=([^&]+)')) {
       window.startval = JSON.parse(LZString.decompressFromBase64(window.location.href.match('[?&]value=([^&]+)')[1]));
     }
- 
+
     // Set options from direct link
     setTheme((window.location.href.match(/[?&]theme=([^&]+)/)||[])[1] || 'bootstrap2', true);
-    
+
     setIconlib((window.location.href.match(/[?&]iconlib=([^&]*)/)||[null,'fontawesome4'])[1], true);
-    
+
     document.getElementById('object_layout').value = (window.location.href.match(/[?&]object_layout=([^&]+)/)||[])[1] || 'normal';
     JSONEditor.defaults.options.object_layout = document.getElementById('object_layout').value;
-    
+
     document.getElementById('show_errors').value = (window.location.href.match(/[?&]show_errors=([^&]+)/)||[])[1] || 'interaction';
     JSONEditor.defaults.options.show_errors = document.getElementById('show_errors').value;
-    
+
     var boolean_options = document.getElementById('boolean_options').children;
     for(var i=0; i<boolean_options.length; i++) {
         if(window.location.href.match(new RegExp('[?&]'+boolean_options[i].getAttribute('value')+'([&=]|$)'))) {
@@ -422,7 +428,7 @@ editor.on("change",  function() {
         }
     }
     refreshBooleanOptions(true);
-    
+
     reload();
 })();
 </script>
